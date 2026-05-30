@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Rill | Магазин нижнего белья</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gabriela&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <style>
+        /* Глобально отключаем стандартный курсор на всех элементах */
+        * {
+            cursor: none !important;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fffaf8;
+            color: #2e241f;
+            line-height: 1.4;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        body.modal-open {
+            overflow: hidden;
+            padding-right: var(--scrollbar-width, 0px);
+        }
+        body.modal-open .hero-section::before {
+            display: none;
+        }
+        
+        /* ---------- МИЛАЯ ОКРУГЛАЯ ЛЕОПАРДОВАЯ ЛАПКА (с деталями и анимацией сжатия) ---------- */
+        .leopard-cursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="pawGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="%23C27E46"/><stop offset="100%" stop-color="%238B4513"/></radialGradient><radialGradient id="padGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="%23F4A460"/><stop offset="100%" stop-color="%23D2691E"/></radialGradient></defs><ellipse cx="50" cy="65" rx="30" ry="26" fill="url(%23pawGrad)" stroke="%234A2A0C" stroke-width="2.5"/><ellipse cx="50" cy="65" rx="24" ry="20" fill="url(%23padGrad)" stroke="%234A2A0C" stroke-width="1.5" opacity="0.9"/><circle cx="50" cy="65" r="5" fill="%23FFB6C1" opacity="0.7"/><circle cx="44" cy="60" r="3" fill="%23000000" opacity="0.8"/><circle cx="56" cy="60" r="3" fill="%23000000" opacity="0.8"/><ellipse cx="28" cy="35" rx="15" ry="13" fill="url(%23pawGrad)" stroke="%234A2A0C" stroke-width="2"/><ellipse cx="50" cy="28" rx="15" ry="13" fill="url(%23pawGrad)" stroke="%234A2A0C" stroke-width="2"/><ellipse cx="72" cy="35" rx="15" ry="13" fill="url(%23pawGrad)" stroke="%234A2A0C" stroke-width="2"/><ellipse cx="28" cy="35" rx="11" ry="9" fill="url(%23padGrad)" stroke="%234A2A0C" stroke-width="1.2"/><ellipse cx="50" cy="28" rx="11" ry="9" fill="url(%23padGrad)" stroke="%234A2A0C" stroke-width="1.2"/><ellipse cx="72" cy="35" rx="11" ry="9" fill="url(%23padGrad)" stroke="%234A2A0C" stroke-width="1.2"/><circle cx="28" cy="35" r="2.5" fill="%23000000" opacity="0.7"/><circle cx="50" cy="28" r="2.5" fill="%23000000" opacity="0.7"/><circle cx="72" cy="35" r="2.5" fill="%23000000" opacity="0.7"/><polygon points="20,28 14,16 26,20" fill="%23D2B48C" stroke="%234A2A0C" stroke-width="1.5" stroke-linejoin="round"/><polygon points="50,18 48,6 56,10" fill="%23D2B48C" stroke="%234A2A0C" stroke-width="1.5" stroke-linejoin="round"/><polygon points="80,28 86,16 74,20" fill="%23D2B48C" stroke="%234A2A0C" stroke-width="1.5" stroke-linejoin="round"/><path d="M33 68 L38 73 L33 78" stroke="%23FFFFFF" stroke-width="1.5" fill="none" opacity="0.8"/></svg>') no-repeat center;
+            background-size: contain;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.12s ease, width 0.2s, height 0.2s;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+        .leopard-cursor.active {
+            width: 54px;
+            height: 54px;
+            transform: translate(-50%, -50%) rotate(6deg);
+            filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.3));
+        }
+        /* На мобильных отключаем кастомный курсор (чтобы не мешал тач-событиям) */
+        @media (max-width: 768px) {
+            * {
+                cursor: auto !important;
+            }
+            .leopard-cursor {
+                display: none;
+            }
+        }
+        
+        /* --- остальные стили (такие же, как в предыдущей версии) --- */
+        @keyframes slowFadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s cubic-bezier(0.25,0.46,0.45,0.94), transform 1s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+
+        .top-bar { position: fixed; top: 20px; left: 20px; z-index: 1000; pointer-events: none; }
+        .icon-btn {
+            pointer-events: auto; background: white; border: none; width: 50px; height: 50px;
+            border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #e84393;
+        }
+        .icon-btn:hover { transform: scale(1.1); background: #ffe0f0; }
+
+        .hero-section {
+            position: relative;
+            background-image: url('https://i.pinimg.com/736x/b3/37/4f/b3374ffc7e16abd168c3361d011e9c94.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll;
+        }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(255, 250, 248, 0) 0%, rgba(255, 250, 248, 0.95) 85%, #fffaf8 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .hero-section > * { position: relative; z-index: 2; }
+
+        .main-header {
+            text-align: center;
+            padding: 80px 20px 40px;
+            background: transparent;
+        }
+        .main-header h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #2c1c14;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+        }
+        .main-header p {
+            font-size: 22px;
+            color: #b35f3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+        }
+        .main-header p i {
+            animation: heartBeat 1.2s infinite ease;
+            color: #e84393;
+        }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .novelties-slider {
+            width: 100%;
+            padding: 20px 0 60px;
+            background: transparent;
+        }
+        .novelties-swiper {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 0;
+            overflow: hidden;
+        }
+        .novelties-swiper .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .novelties-swiper .swiper-slide img {
+            width: auto;
+            max-width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 32px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            transition: transform 0.5s;
+            margin: 0 auto;
+            display: block;
+        }
+        .novelties-swiper .swiper-slide:hover img { transform: scale(1.02); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .section { padding: 80px 0 60px; }
+        .section-title {
+            text-align: center; font-size: 38px; font-weight: 500; margin-bottom: 56px;
+            color: #2c1c14; position: relative;
+        }
+        .section-title:after {
+            content: ''; display: block; width: 70px; height: 3px;
+            background: #b35f3a; margin: 16px auto 0; border-radius: 4px;
+        }
+
+        /* Сетка товаров — все карточки одинаковой высоты */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 28px;
+            margin-top: 40px;
+        }
+        .product-card {
+            background: white; border-radius: 28px; overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.04);
+            transition: all 0.5s cubic-bezier(0.2,0.9,0.4,1.1);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .product-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px rgba(0,0,0,0.1); }
+        .favorite-icon {
+            position: absolute; top: 12px; right: 12px; background: white; width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #ccc; cursor: pointer; z-index: 10;
+            transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .favorite-icon.active { color: #e74c3c; }
+        .product-img { width: 100%; height: 320px; object-fit: cover; transition: transform 0.4s; flex-shrink: 0; }
+        .product-card:hover .product-img { transform: scale(1.02); }
+        .product-content { padding: 20px 18px 24px; flex: 1; display: flex; flex-direction: column; }
+        .product-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .old-price { font-size: 16px; color: #aaa; text-decoration: line-through; }
+        .new-price { font-size: 22px; font-weight: 700; color: #e74c3c; }
+        .normal-price { font-size: 22px; font-weight: 700; color: #b35f3a; }
+        .btn-cart {
+            background: #2c1c14; color: white; border: none; padding: 10px;
+            width: 100%; border-radius: 60px; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: auto;
+        }
+        .btn-cart:hover { background: #b35f3a; transform: scale(1.01); }
+
+        .hits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 40px;
+        }
+        .hit-card {
+            background: white; border-radius: 28px; overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            transition: 0.4s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+        .hit-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px rgba(0,0,0,0.12); }
+        .hit-img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .hit-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .hit-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .hit-price { font-size: 24px; font-weight: 700; color: #b35f3a; margin-bottom: 16px; }
+        .hit-actions {
+            margin-top: auto;
+        }
+        .hit-actions button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+            background: #2c1c14;
+            color: white;
+        }
+        .hit-actions button:hover { background: #b35f3a; }
+
+        .corsets-slider { margin-top: 20px; }
+        .corsets-swiper { width: 100%; padding: 20px 0 50px; }
+        .corsets-swiper .swiper-slide { height: auto; }
+        .corset-card {
+            background: white; border-radius: 28px; overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.04);
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .corset-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px rgba(0,0,0,0.12); }
+        .corset-img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .corset-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .corset-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .corset-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+        .corset-old-price { font-size: 16px; color: #aaa; text-decoration: line-through; }
+        .corset-new-price { font-size: 22px; font-weight: 700; color: #e74c3c; }
+        .corset-card .btn-cart { margin-top: auto; }
+
+        .advantages-block {
+            background-image: url('https://i.pinimg.com/736x/c9/a3/96/c9a39673352a1358286ed2a676e5f3fa.jpg');
+            background-size: cover; background-position: center; padding: 80px 0;
+            margin-top: 60px; position: relative;
+        }
+        .advantages-block::before {
+            content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.6);
+        }
+        .advantages-content {
+            position: relative; z-index: 2; color: white; text-align: center;
+            max-width: 900px; margin: 0 auto;
+        }
+        .advantages-content h2 { font-size: 38px; margin-bottom: 24px; }
+        .advantages-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px; margin-top: 35px;
+        }
+        .advantage-item {
+            background: rgba(255,255,255,0.9); border-radius: 26px; padding: 22px;
+            color: #2c1c14; backdrop-filter: blur(2px);
+        }
+        .advantage-item strong { font-size: 20px; display: block; margin-bottom: 8px; }
+
+        .cart-fixed, .favorites-fixed {
+            position: fixed;
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+            border: none;
+        }
+        .cart-fixed { bottom: 25px; right: 25px; background: #2c1c14; color: white; }
+        .favorites-fixed { bottom: 25px; right: 120px; background: white; color: #e74c3c; border: 1px solid #f0e2db; }
+        .cart-count, .favorites-count {
+            position: absolute; top: -5px; right: -5px;
+            background: #e67e22; color: white; border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .favorites-count { background: #e74c3c; }
+
+        /* Модальные окна */
+        .cart-modal, .favorites-modal, .salon-modal, .product-modal, .fullscreen-modal, .checkout-modal {
+            display: none; position: fixed; top:0; left:0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            z-index: 1100; align-items: center; justify-content: center;
+        }
+        .sizetable-modal {
+            display: none; position: fixed; top:0; left:0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            z-index: 1200; align-items: center; justify-content: center;
+        }
+        .cart-modal-content, .favorites-modal-content, .sizetable-modal-content, .checkout-modal-content {
+            background: white;
+            max-width: 1100px;
+            width: 95%;
+            max-height: 85vh;
+            border-radius: 48px;
+            padding: 32px;
+            overflow-y: auto;
+            animation: modalFadeIn 0.4s ease;
+        }
+        .salon-modal-content {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 32px;
+            padding: 32px;
+            text-align: center;
+            animation: modalFadeIn 0.4s ease;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        .salon-modal-content h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #b35f3a;
+        }
+        .salon-modal-content p {
+            font-size: 18px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .salon-modal-content .social-icons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 28px;
+            color: #b35f3a;
+        }
+        
+        .product-modal-content {
+            background: white;
+            width: 95%;
+            max-width: 1300px;
+            max-height: 90vh;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            animation: modalFadeIn 0.4s ease;
+            position: relative;
+        }
+        .product-modal-left {
+            flex: 1.2;
+            background: #faf5f2;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px;
+            overflow-y: visible;
+            height: auto;
+        }
+        .product-modal-left img {
+            width: 100%;
+            max-height: calc(90vh - 60px);
+            object-fit: contain;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: block;
+        }
+        .product-modal-left img:hover { transform: scale(1.02); }
+        .product-modal-right {
+            flex: 0.8;
+            padding: 28px;
+            overflow-y: auto;
+            max-height: 90vh;
+            scroll-behavior: smooth;
+            border-left: 1px solid #f0e2db;
+        }
+        .product-modal-right h2 { font-size: 28px; margin-bottom: 12px; }
+        .product-price { font-size: 24px; font-weight: 700; margin: 12px 0; }
+        .product-description { margin: 16px 0; line-height: 1.45; color: #444; }
+        .care-block {
+            background: #f9f0ec;
+            border-radius: 24px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .care-block h4 { margin-bottom: 10px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+        .care-icons-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .care-icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 13px;
+            gap: 6px;
+            width: 70px;
+        }
+        .care-icon-item i { font-size: 28px; color: #b35f3a; }
+        .delivery-info {
+            background: #eef2f5; padding: 14px; border-radius: 24px;
+            margin: 16px 0;
+        }
+        .delivery-info h4 { margin-bottom: 10px; font-size: 17px; }
+        .delivery-info p { margin: 6px 0; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .size-selector { margin: 16px 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .size-selector select { padding: 8px 14px; border-radius: 40px; border: 1px solid #f0e2db; background: white; font-size: 14px; }
+        .size-link { color: #b35f3a; cursor: pointer; font-size: 13px; text-decoration: underline; margin-left: 6px; }
+        .modal-actions { display: flex; gap: 14px; margin: 18px 0; }
+        .modal-actions button {
+            flex: 1; padding: 12px; border-radius: 60px; font-weight: 600;
+            border: none; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 8px; font-size: 15px;
+        }
+        .modal-cart { background: #2c1c14; color: white; }
+        .modal-cart:hover { background: #b35f3a; }
+        .modal-fav { background: #f5ede8; color: #2c1c14; }
+        .modal-fav.active { background: #ffe0e6; color: #e74c3c; }
+        .recommend-section {
+            margin-top: 24px;
+            border-top: 2px solid #f0e2db;
+            padding-top: 20px;
+        }
+        .recommend-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .recommend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 14px;
+        }
+        .recommend-item {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .recommend-item:hover { transform: translateY(-4px); box-shadow: 0 10px 18px rgba(0,0,0,0.1); }
+        .recommend-img { width: 100%; height: 120px; object-fit: cover; }
+        .recommend-info { padding: 8px; }
+        .recommend-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+        .recommend-price { font-weight: 700; color: #b35f3a; font-size: 14px; }
+
+        .close-product {
+            position: absolute; top: 16px; right: 20px;
+            font-size: 30px; cursor: pointer; z-index: 10;
+            background: white; width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .close-product:hover { background: #f0e2db; transform: rotate(90deg); transition: 0.3s; }
+
+        .cart-item {
+            display: flex; gap: 20px; align-items: center;
+            padding: 16px 0; border-bottom: 1px solid #f0e2db;
+        }
+        .cart-item-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+        .cart-item-details { flex: 1; font-size: 15px; }
+        .cart-item-details strong { font-size: 18px; }
+        .cart-item-actions { display: flex; gap: 12px; align-items: center; }
+        .cart-item-actions button {
+            background: #f0e2db; border: none; width: 36px; height: 36px;
+            border-radius: 50%; cursor: pointer; font-weight: bold;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .cart-item-actions button:hover { background: #e0d0c8; }
+        .cart-total { font-size: 24px; font-weight: 700; margin: 16px 0; text-align: right; }
+        .checkout-btn { background: #b35f3a; color: white; width: 100%; padding: 14px; border-radius: 40px; cursor: pointer; border: none; font-size: 18px; }
+        footer { text-align: center; padding: 30px; border-top: 1px solid #f0e2db; color: #aa8a76; font-size: 14px; }
+        .toast-msg {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: #2c1c14; color: white; padding: 10px 20px; border-radius: 60px;
+            z-index: 1300; white-space: nowrap; font-size: 14px;
+        }
+        .size-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; }
+        .size-table th, .size-table td { border: 1px solid #f0e2db; padding: 8px; text-align: center; }
+        .size-table th { background: #f9f0ec; }
+        .fullscreen-modal-content { background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .fullscreen-image { max-width: 90%; max-height: 90%; object-fit: contain; animation: scaleIn 0.3s ease; }
+        
+        .checkout-form-group { margin-bottom: 18px; }
+        .checkout-form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+        .checkout-form-group input, .checkout-form-group select, .checkout-form-group textarea {
+            width: 100%; padding: 10px 14px; border-radius: 30px; border: 1px solid #f0e2db;
+            font-family: inherit; font-size: 15px;
+        }
+        .checkout-submit { background: #2c1c14; color: white; width: 100%; padding: 12px; border-radius: 40px; font-weight: 700; margin-top: 16px; cursor: pointer; border: none; }
+        .success-message { text-align: center; padding: 20px; }
+        .success-message i { font-size: 50px; color: #4caf50; margin-bottom: 16px; }
+        .back-to-shop { background: #b35f3a; color: white; padding: 10px 20px; border-radius: 40px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 16px; border: none; text-decoration: none; }
+
+        /* ---------- МОБИЛЬНАЯ АДАПТАЦИЯ ---------- */
+        @media (max-width: 800px) {
+            .product-modal-content { flex-direction: column; }
+            .product-modal-left { max-height: 40vh; padding: 16px; align-items: center; }
+            .product-modal-left img { max-height: 38vh; }
+            .product-modal-right { max-height: 55vh; padding: 20px; }
+            .main-header h1 { font-size: 44px; }
+            .main-header p { font-size: 18px; }
+            .novelties-swiper .swiper-slide img { height: 260px; }
+            .cart-fixed, .favorites-fixed { width: 60px; height: 60px; right: 15px; bottom: 20px; font-size: 26px; }
+            .favorites-fixed { right: 90px; }
+            .cart-item-img { width: 80px; height: 80px; }
+            .cart-item-details strong { font-size: 16px; }
+            
+            .product-img { height: 240px; }
+            .corset-img { height: 240px; }
+            .hit-img { height: 240px; }
+            .products-grid { gap: 20px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+            .hits-grid { gap: 20px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+            
+            .product-content { padding: 16px; }
+            .product-title { font-size: 16px; }
+            .old-price, .normal-price, .new-price { font-size: 18px; }
+            .btn-cart { padding: 10px; font-size: 14px; }
+            
+            .hit-content { padding: 16px; }
+            .hit-title { font-size: 18px; }
+            .hit-price { font-size: 20px; margin-bottom: 12px; }
+            .hit-actions button { padding: 8px; font-size: 14px; }
+            
+            .corset-content { padding: 16px; }
+            .corset-title { font-size: 16px; }
+            .section-title { font-size: 30px; margin-bottom: 40px; }
+            .section { padding: 60px 0 40px; }
+            .advantages-content h2 { font-size: 32px; }
+            .advantages-grid { gap: 20px; }
+            .advantage-item { padding: 20px; font-size: 15px; }
+            .advantage-item strong { font-size: 20px; }
+
+            .cart-modal-content, .favorites-modal-content, .sizetable-modal-content, .checkout-modal-content {
+                width: 98%;
+                max-width: 98%;
+                padding: 24px;
+                border-radius: 32px;
+            }
+            .salon-modal-content {
+                width: 90%;
+                max-width: 450px;
+                padding: 28px;
+            }
+        }
+        @media (max-width: 480px) {
+            .product-img { height: 200px; }
+            .corset-img { height: 200px; }
+            .hit-img { height: 200px; }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+            .hits-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+            .product-title { font-size: 15px; }
+            .price-row { margin-bottom: 10px; }
+            .btn-cart { font-size: 13px; padding: 8px; }
+            .hit-title { font-size: 16px; }
+            .hit-price { font-size: 18px; }
+            .hit-actions button { font-size: 13px; padding: 8px; }
+            .cart-fixed, .favorites-fixed { width: 56px; height: 56px; bottom: 15px; font-size: 26px; }
+            .favorites-fixed { right: 85px; }
+            .cart-item-img { width: 75px; height: 75px; }
+            .salon-modal-content { width: 95%; max-width: 360px; padding: 24px; }
+            .salon-modal-content h2 { font-size: 26px; }
+            .salon-modal-content p { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button class="icon-btn" id="salonBtn"><i class="fas fa-store"></i></button>
+</div>
+
+<div class="hero-section">
+    <div class="main-header animate-on-scroll">
+        <h1>Белье от Rill</h1>
+        <p>Выберите комплектик, чтобы порадовать себя <i class="fas fa-heart"></i></p>
+    </div>
+    <div class="novelties-slider animate-on-scroll">
+        <div class="novelties-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide"><img src="https://optim.tildacdn.pub/tild6436-3038-4230-b966-303234346535/-/format/webp/022976655f3900507dc7.jpg.webp" alt="Новинка 1"></div>
+                <div class="swiper-slide"><img src="https://optim.tildacdn.pub/tild3135-3535-4962-b762-623737343632/-/format/webp/bcb8bc5a2ec74f5ff4ac.jpg.webp" alt="Новинка 2"></div>
+                <div class="swiper-slide"><img src="https://a.allegroimg.com/original/11644b/550ce11e46e4843d787e8d2896c4/Zmyslowy-komplet-bielizny-stringi-biustonosz-pas-do-ponczoch-zestaw-90k" alt="Новинка 3"></div>
+            </div>
+            <div class="swiper-pagination novelties-pagination"></div>
+            <div class="swiper-button-next novelties-next"></div>
+            <div class="swiper-button-prev novelties-prev"></div>
+        </div>
+    </div>
+</div>
+
+<section id="hits" style="padding: 50px 0 30px;">
+    <div class="container animate-on-scroll">
+        <div class="section-title">🔥 Хиты сезона 🔥</div>
+        <div class="hits-grid" id="hitsGrid"></div>
+    </div>
+</section>
+
+<div class="container animate-on-scroll">
+    <div class="section">
+        <div class="section-title">🎉 Акции 🎉</div>
+        <div class="products-grid" id="salesGrid"></div>
+    </div>
+</div>
+
+<div class="container animate-on-scroll">
+    <div class="section">
+        <div class="section-title">⭐ Хиты продаж ⭐</div>
+        <div class="products-grid" id="bestsellersGrid"></div>
+    </div>
+</div>
+
+<div class="container animate-on-scroll">
+    <div class="section">
+        <div class="section-title">👗 Корсеты 👗</div>
+        <div class="swiper corsetsSwiper">
+            <div class="swiper-wrapper" id="corsetsSwiperWrapper"></div>
+            <div class="swiper-pagination corsets-pagination"></div>
+            <div class="swiper-button-next corsets-next"></div>
+            <div class="swiper-button-prev corsets-prev"></div>
+        </div>
+    </div>
+</div>
+
+<div class="advantages-block animate-on-scroll">
+    <div class="advantages-content container">
+        <h2>Наши преимущества</h2>
+        <p style="font-size: 16px; margin-bottom: 18px;">Каждый день мы создаем и экспериментируем, чтобы сделать наших клиентов счастливыми</p>
+        <div class="advantages-grid">
+            <div class="advantage-item"><strong>✨ Хорошие материалы</strong> Импортные материалы, без опасных красителей и примесей</div>
+            <div class="advantage-item"><strong>🚚 Быстрая доставка</strong> Доставляем комплекты в течение 3 часов после заказа</div>
+            <div class="advantage-item"><strong>🎨 Талантливые дизайны</strong> Дизайнеры с многолетним опытом и хорошим вкусом</div>
+        </div>
+    </div>
+</div>
+
+<footer>© Rill — нижнее белье с душой</footer>
+
+<button class="cart-fixed" id="cartButton"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></button>
+<button class="favorites-fixed" id="favoritesButton"><i class="fas fa-heart"></i><span class="favorites-count" id="favoritesCount">0</span></button>
+
+<!-- Модалки -->
+<div id="cartModal" class="cart-modal"><div class="cart-modal-content"><span class="close-cart" id="closeCartBtn" style="float:right; font-size:24px; cursor:pointer;">&times;</span><h3>Корзина</h3><div id="cartItemsList"></div><div class="cart-total">Итого: <span id="cartTotal">0</span> ₽</div><button class="checkout-btn" id="checkoutBtn">Оформить</button></div></div>
+<div id="favoritesModal" class="favorites-modal"><div class="favorites-modal-content"><span class="close-favorites" id="closeFavoritesBtn" style="float:right; font-size:24px; cursor:pointer;">&times;</span><h3>Избранное</h3><div id="favoritesItemsList"></div><div id="favoritesEmptyMsg" style="display:none; text-align:center; padding:30px;">Пусто</div></div></div>
+
+<!-- О салоне (полностью обновлённый блок) -->
+<div id="salonModal" class="salon-modal">
+    <div class="salon-modal-content">
+        <span class="close-salon" id="closeSalonBtn" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
+        <h2>🌸 О салоне Rill</h2>
+        <p><i class="fas fa-map-marker-alt"></i> Москва, ул. Тверская, д. 15, м. Тверская / Охотный Ряд</p>
+        <p><i class="fas fa-phone"></i> +7 (495) 123-45-67</p>
+        <p><i class="fas fa-envelope"></i> hello@rill.com</p>
+        <p><i class="fas fa-clock"></i> Пн–Вс: 11:00 – 21:00</p>
+        <div style="margin: 20px 0;">
+            <p style="font-weight: 600; color: #b35f3a;">✨ Мы создаём креативное бельё, которое вдохновляет</p>
+            <p style="font-size: 16px; line-height: 1.4;">Каждый комплект продуман до мелочей: необычные принты, сложное кружево, мягкие ткани. В нашем ателье вы можете прийти на примерку, проконсультироваться со стилистом и подобрать идеальный вариант для любого настроения. Индивидуальный пошив, большая размерная сетка (от 42 до 58).</p>
+        </div>
+        <div class="social-icons" style="margin-bottom: 10px;">
+            <i class="fab fa-instagram"></i>
+            <i class="fab fa-telegram"></i>
+            <i class="fab fa-whatsapp"></i>
+            <i class="fab fa-vk"></i>
+        </div>
+        <p style="font-size: 14px; color: #888;">При заказе от 5000 ₽ — примерка курьером бесплатно</p>
+    </div>
+</div>
+
+<div id="sizetableModal" class="sizetable-modal">
+    <div class="sizetable-modal-content">
+        <span id="closeSizetableBtn" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
+        <h3>Таблица размеров (Россия, от 42 до 58)</h3>
+        <div id="dynamicSizeTableContainer"></div>
+    </div>
+</div>
+
+<div id="checkoutModal" class="checkout-modal">
+    <div class="checkout-modal-content" id="checkoutModalContent"></div>
+</div>
+
+<div id="productModal" class="product-modal">
+    <div class="product-modal-content">
+        <span class="close-product" id="closeProductBtn">&times;</span>
+        <div class="product-modal-left">
+            <img id="modalProductImage" src="" alt="Product">
+        </div>
+        <div class="product-modal-right" id="productModalRight"></div>
+    </div>
+</div>
+
+<div id="fullscreenModal" class="fullscreen-modal">
+    <div class="fullscreen-modal-content">
+        <span class="close-fullscreen" id="closeFullscreenBtn" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; z-index:1200;">&times;</span>
+        <img id="fullscreenImage" class="fullscreen-image" src="" alt="Fullscreen">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    // ---------- КАСТОМНЫЙ КУРСОР (милая леопардовая лапка) с анимацией сжатия при клике ----------
+    (function() {
+        if (window.innerWidth > 768) {
+            const cursor = document.createElement('div');
+            cursor.className = 'leopard-cursor';
+            document.body.appendChild(cursor);
+            
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+            
+            const interactiveSelectors = 'button, a, .product-card, .hit-card, .corset-card, .favorite-icon, .btn-cart, .hit-cart, .modal-cart, .checkout-btn, .back-to-shop, .close-cart, .close-favorites, .close-salon, .close-product, .close-fullscreen, .size-link, .icon-btn, .cart-fixed, .favorites-fixed, .recommend-item, .swiper-button-next, .swiper-button-prev, .novelties-next, .novelties-prev, .corsets-next, .corsets-prev, img, .product-img, .hit-img, .corset-img';
+            
+            function updateActiveClass(e) {
+                if (e.target.closest(interactiveSelectors)) {
+                    cursor.classList.add('active');
+                } else {
+                    cursor.classList.remove('active');
+                }
+            }
+            
+            // Анимация сжатия при клике
+            function compressCursor(e) {
+                if (e.target.closest(interactiveSelectors)) {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                    setTimeout(() => {
+                        if (cursor.classList.contains('active')) {
+                            cursor.style.transform = 'translate(-50%, -50%) rotate(6deg) scale(1)';
+                        } else {
+                            cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                        }
+                    }, 120);
+                }
+            }
+            
+            document.addEventListener('mouseover', updateActiveClass);
+            document.addEventListener('mouseout', updateActiveClass);
+            document.addEventListener('mousedown', compressCursor);
+        }
+    })();
+
+    // ---------- Блокировка скролла и прочее ----------
+    function getScrollbarWidth() {
+        return window.innerWidth - document.documentElement.clientWidth;
+    }
+    let scrollbarWidth = 0;
+    function disableBodyScroll() {
+        scrollbarWidth = getScrollbarWidth();
+        document.body.style.setProperty('--scrollbar-width', scrollbarWidth + 'px');
+        document.body.classList.add('modal-open');
+    }
+    function enableBodyScroll() {
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('--scrollbar-width');
+    }
+    function closeModal(modalElement) {
+        if(modalElement) modalElement.style.display = 'none';
+        enableBodyScroll();
+    }
+
+    // ---------- РАЗМЕРЫ ОТ 42 ДО 58 ----------
+    const russianSizes = ['42','44','46','48','50','52','54','56','58'];
+    const sizeMapping = {
+        '42': { bust: '80-84', waist: '60-64', hips: '86-90' },
+        '44': { bust: '84-88', waist: '64-68', hips: '90-94' },
+        '46': { bust: '88-92', waist: '68-72', hips: '94-98' },
+        '48': { bust: '92-96', waist: '72-76', hips: '98-102' },
+        '50': { bust: '96-100', waist: '76-80', hips: '102-106' },
+        '52': { bust: '100-104', waist: '80-84', hips: '106-110' },
+        '54': { bust: '104-108', waist: '84-88', hips: '110-114' },
+        '56': { bust: '108-112', waist: '88-92', hips: '114-118' },
+        '58': { bust: '112-116', waist: '92-96', hips: '118-122' }
+    };
+    const corsetSizeMapping = {
+        '42': { waist: '60-65', bust: '80-85' },
+        '44': { waist: '64-69', bust: '84-89' },
+        '46': { waist: '68-73', bust: '88-93' },
+        '48': { waist: '72-77', bust: '92-97' },
+        '50': { waist: '76-81', bust: '96-101' },
+        '52': { waist: '80-85', bust: '100-105' },
+        '54': { waist: '84-89', bust: '104-109' },
+        '56': { waist: '88-93', bust: '108-113' },
+        '58': { waist: '92-97', bust: '112-117' }
+    };
+    
+    function getSizeTableHtml(isCorset = false) {
+        let html = '<table class="size-table"><thead><tr><th>Российский размер</th>';
+        if(isCorset) { html += '<th>Талия (см)</th><th>Рек. обхват груди (см)</th>'; }
+        else { html += '<th>Грудь (см)</th><th>Талия (см)</th><th>Бёдра (см)</th>'; }
+        html += '</td></thead><tbody>';
+        russianSizes.forEach(sz => {
+            html += `<tr><td>${sz}</td>`;
+            if(isCorset) {
+                html += `<td>${corsetSizeMapping[sz].waist}</td><td>${corsetSizeMapping[sz].bust}</td>`;
+            } else {
+                html += `<td>${sizeMapping[sz].bust}</td><td>${sizeMapping[sz].waist}</td><td>${sizeMapping[sz].hips}</td>`;
+            }
+            html += `</tr>`;
+        });
+        html += '</tbody></table>';
+        return html;
+    }
+    
+    function showSizeTable(isCorset = false) {
+        const container = document.getElementById('dynamicSizeTableContainer');
+        if(container) container.innerHTML = getSizeTableHtml(isCorset);
+        document.getElementById('sizetableModal').style.display = 'flex';
+        disableBodyScroll();
+    }
+
+    // ---------- ТОВАРЫ ----------
+    const saleProducts = [
+        { id: 1, name: "Лавандовый сон", price: 10700, oldPrice: 13700, img: "https://i1024.63pokupki.ru/item/x1024/973b6a9e55b7fb9c03b29b3802071e30894u1qcullmnuadpv.jpg", description: "Нежный комплект цвета лаванды из дышащего микроволокна. Идеален для романтичного вечера.", sizes: russianSizes, isCorset: false },
+        { id: 2, name: "Белое облако", price: 9800, oldPrice: 12800, img: "https://top15moscow.ru/storage/photos/September2023/thumbnails/1x/O2EA5ysmTH8gL0W3ojzf.jpg?1693927954", description: "Легкий как облако комплект из хлопка с кружевом. Ощущение невесомости.", sizes: russianSizes.slice(0,7), isCorset: false },
+        { id: 3, name: "Медовый месяц", price: 12900, oldPrice: 15900, img: "https://basket-32.wbbasket.ru/vol6727/part672795/672795382/images/big/1.webp", description: "Набор в медовых тонах с кружевной отделкой. Подчеркивает достоинства.", sizes: russianSizes, isCorset: false },
+        { id: 4, name: "Сиреневый туман", price: 12300, oldPrice: 15300, img: "https://usmall.ru/image/990/78/52/25703e8242613aded7e2660227505b75.jpeg", description: "Таинственный сиреневый оттенок, мягкое кружево — для особых моментов.", sizes: russianSizes.slice(0,7), isCorset: false },
+        { id: 5, name: "Розовый пион", price: 12500, oldPrice: 15500, img: "https://img-edg.joomcdn.net/26ee7749094ccd04550a36bab9e924d5395e7d1b_original.jpeg", description: "Яркий цветочный принт, атласная ткань. Создаёт игривое настроение.", sizes: russianSizes, isCorset: false },
+        { id: 6, name: "Сияние луны", price: 14200, oldPrice: 17200, img: "https://ae04.alicdn.com/kf/S3052d6aa9cbe4b268d807ed19d099907K.jpg", description: "Серебристо-голубой комплект с эффектом мерцания. Шёлк и кружево.", sizes: russianSizes.slice(0,7), isCorset: false },
+        { id: 7, name: "Ванильное облако", price: 10300, oldPrice: 13300, img: "https://ae04.alicdn.com/kf/S52759ecb9d4840f3a4739bfe5519de9at.jpg", description: "Нежный кремовый цвет, мягкое микрофибра. Для повседневного комфорта.", sizes: russianSizes, isCorset: false },
+        { id: 8, name: "Мятная свежесть", price: 11400, oldPrice: 14400, img: "https://ir.ozone.ru/s3/multimedia-k/6644888876.jpg", description: "Освежающий мятный оттенок, дышащая сетка. Отлично подходит для лета.", sizes: russianSizes.slice(0,7), isCorset: false },
+        { id: 9, name: "Дикая страсть", price: 13499, oldPrice: 16499, img: "https://optim.tildacdn.pub/tild3336-3061-4530-a664-643738333065/-/format/webp/3a346710ba2c1e488e67.jpg.webp", description: "Соблазнительный комплект с леопардовым принтом и кружевными вставками.", sizes: russianSizes, isCorset: false },
+        { id: 10, name: "Кремовая нежность", price: 9900, oldPrice: 12900, img: "https://a.lmcdn.ru/product/M/P/MP002XW0SI4U_9912957_1_v2_2x.jpg", description: "Мягкий кремовый комплект из эко-кожи и кружева. Сочетание смелости и нежности.", sizes: russianSizes.slice(0,7), isCorset: false }
+    ];
+    const bestsellers = [
+        { id: 11, name: "Ягодный мусс", price: 13500, img: "https://optim.tildacdn.pub/tild6436-3038-4230-b966-303234346535/-/format/webp/022976655f3900507dc7.jpg.webp", description: "Сочетание ягодных оттенков: малина, смородина. Атлас и кружево.", sizes: russianSizes, isCorset: false },
+        { id: 12, name: "Кофейная страсть", price: 11800, img: "https://image.made-in-china.com/2f0j00zEfcKGwROhgC/Leopard-Print-Suspender-Metal-Chain-Sexy-Underwear-Set.webp", description: "Кофейно-шоколадный комплект с металлическими цепочками. Смелый выбор.", sizes: russianSizes.slice(0,7), isCorset: false },
+        { id: 13, name: "Алый закат", price: 13100, img: "https://avatars.mds.yandex.net/get-mpic/5234821/img_id2454767198898317404.jpeg/orig", description: "Насыщенный алый цвет, гипюровые вставки. Страсть и элегантность.", sizes: russianSizes, isCorset: false },
+        { id: 14, name: "Шоколадная феерия", price: 14900, img: "https://sun9-4.userapi.com/s/v1/ig2/KYEwDq5Ikjt8U7x-5dM79Q_GMLyJ_hY0MkMP_ut1yR30FK342COLUA6WlvCTm3J3QlpUmmI7UdoqnC4txP2DWkVv.jpg?quality=96&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1200x1200&from=bu&u=YzcVEj06X78WF3-Wz32bxnw_GcuIuSOJGz-oGmOurAM&cs=1200x0", description: "Шоколадный комплект с кружевом ручной работы. Элегантность и комфорт.", sizes: russianSizes.slice(1), isCorset: false },
+        { id: 15, name: "Лазурный флер", price: 10999, img: "https://optim.tildacdn.pub/tild6333-3939-4639-b530-353534633732/-/format/webp/2dd8891c8bb9bb0b2d77.jpg.webp", description: "Голубой комплект с лёгким флёром кружева. Для мечтательных натур.", sizes: russianSizes.slice(0,8), isCorset: false },
+        { id: 16, name: "Изумрудный вальс", price: 13900, img: "https://a.lmcdn.ru/product/M/P/MP002XW0ZZ4A_19864137_1_v2_2x.jpg", description: "Изумрудный цвет, бархатистая текстура. Роскошь в каждой детали.", sizes: russianSizes.slice(1), isCorset: false },
+        { id: 17, name: "Ночная орхидея", price: 11900, img: "https://avatars.mds.yandex.net/get-mpic/15593671/2a0000019ae8b7d34f8bc7925cb9c39daf5a/orig", description: "Тёмно-фиолетовый комплект с цветочным кружевом. Загадочный и притягательный.", sizes: russianSizes.slice(0,8), isCorset: false },
+        { id: 18, name: "Цветочная симфония", price: 10800, img: "https://optim.tildacdn.pub/tild6565-6131-4930-b831-393131313734/-/format/webp/1aa4b565d3eb65e7088e.jpg.webp", description: "Нежный цветочный принт на шелке. Идеален для тёплого вечера.", sizes: russianSizes.slice(1), isCorset: false },
+        { id: 19, name: "Ягодный микс", price: 12200, img: "https://optim.tildacdn.pub/tild3237-6137-4731-b530-343336343438/-/format/webp/94c27efff827a217b83a.jpg.webp", description: "Микс ягодных оттенков, игривое кружево. Для веселых и уверенных.", sizes: russianSizes.slice(0,8), isCorset: false },
+        { id: 20, name: "Эксклюзивный комплект", price: 14500, img: "https://optim.tildacdn.pub/tild6565-6131-4930-b831-393131313734/-/format/webp/1aa4b565d3eb65e7088e.jpg.webp", description: "Лимитированная коллекция: ручная вышивка, натуральный шёлк.", sizes: russianSizes.slice(1,8), isCorset: false }
+    ];
+    const corsets = [
+        { id: 101, name: "Корсет Венера", price: 9990, oldPrice: 15990, img: "https://img-edg.joomcdn.net/63101cb91bf8e9331f96d3ec695332764dcb542e_original.jpeg", description: "Классический корсет из атласа с косточками. Подчеркивает талию и придаёт осанку.", sizes: russianSizes.slice(0,7), isCorset: true },
+        { id: 102, name: "Корсет Афродита", price: 10990, oldPrice: 16990, img: "https://st.aestatic.net/items-img/R/G/P/H/S7a692e2aa871490bbeaa37301a4edd8dt.jpg_960x960.jpg", description: "Кружевной корсет с регулируемыми бретелями. Создаёт соблазнительный силуэт.", sizes: russianSizes.slice(0,6), isCorset: true },
+        { id: 103, name: "Корсет Грейс", price: 8990, oldPrice: 14990, img: "https://img-edg.joomcdn.net/ec4ae9ff08d492b65193571f0277e3d684338c10_original.jpeg", description: "Лёгкий корсет из хлопка на каждый день. Элегантность без ущерба комфорту.", sizes: russianSizes.slice(0,7), isCorset: true },
+        { id: 104, name: "Корсет Кармен", price: 11990, oldPrice: 17990, img: "https://i.pinimg.com/474x/d4/f8/da/d4f8da06de9303682e9bd6f037f0134f.jpg", description: "Красный корсет с испанским характером. Идеален для карнавала или фотосессии.", sizes: russianSizes.slice(1,6), isCorset: true },
+        { id: 105, name: "Корсет Белла", price: 12990, oldPrice: 18990, img: "https://a.allegroimg.com/original/11e5c4/9caa8dc646cdb7e1076f9afbc1fd/Lateksowy-gorset-czarny-WYSZCZUPLAJACY-brzuch-PAS-Latex-Body-damskie-M", description: "Латексный корсет ultra-приталенный. Экстремальная утяжка и эффектный вид.", sizes: russianSizes.slice(0,5), isCorset: true }
+    ];
+    const hits = [
+        { id: 201, name: "Дикая страсть", price: 13499, img: "https://optim.tildacdn.pub/tild3336-3061-4530-a664-643738333065/-/format/webp/3a346710ba2c1e488e67.jpg.webp", description: "Популярнейший комплект с леопардовым принтом — бестселлер сезона.", sizes: russianSizes, isCorset: false },
+        { id: 202, name: "Лазурный флер", price: 10999, img: "https://optim.tildacdn.pub/tild6333-3939-4639-b530-353534633732/-/format/webp/2dd8891c8bb9bb0b2d77.jpg.webp", description: "Нежный голубой комплект, который разобрали за неделю.", sizes: russianSizes.slice(0,8), isCorset: false },
+        { id: 203, name: "Цветочная симфония", price: 10800, img: "https://optim.tildacdn.pub/tild6565-6131-4930-b831-393131313734/-/format/webp/1aa4b565d3eb65e7088e.jpg.webp", description: "Цветочный шедевр, пользующийся огромной любовью покупательниц.", sizes: russianSizes.slice(1), isCorset: false }
+    ];
+
+    const allProducts = [...saleProducts, ...bestsellers, ...corsets, ...hits];
+    let cart = JSON.parse(localStorage.getItem('rillCart')) || [];
+    let favorites = JSON.parse(localStorage.getItem('rillFavorites')) || [];
+
+    function saveCart() { localStorage.setItem('rillCart', JSON.stringify(cart)); updateCartUI(); }
+    function saveFav() { localStorage.setItem('rillFavorites', JSON.stringify(favorites)); updateFavUI(); renderAll(); }
+    function updateCartUI() { document.getElementById('cartCount').innerText = cart.reduce((s,i)=>s+i.quantity,0); renderCartModal(); }
+    function updateFavUI() { document.getElementById('favoritesCount').innerText = favorites.length; renderFavModal(); }
+
+    function addToCartWithSize(product, selectedSize) {
+        if (!selectedSize) { showToast("Пожалуйста, выберите размер!"); return false; }
+        const existing = cart.find(item => item.id === product.id && item.size === selectedSize);
+        if (existing) existing.quantity++;
+        else cart.push({ id: product.id, name: product.name, price: product.price, img: product.img, size: selectedSize, quantity: 1 });
+        saveCart();
+        showToast(`${product.name} (${selectedSize}) добавлен в корзину`);
+        return true;
+    }
+    function toggleFavorite(id) {
+        const idx = favorites.indexOf(id);
+        if(idx===-1) { favorites.push(id); showToast("❤️ В избранном"); } else { favorites.splice(idx,1); showToast("Убрано"); }
+        saveFav();
+    }
+    function isFavorite(id) { return favorites.includes(id); }
+    function showToast(msg) { let t=document.createElement('div'); t.className='toast-msg'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); },2300); }
+
+    function openFullscreen(imgSrc) { document.getElementById('fullscreenImage').src=imgSrc; document.getElementById('fullscreenModal').style.display='flex'; disableBodyScroll(); }
+    
+    document.getElementById('closeFullscreenBtn').onclick = () => closeModal(document.getElementById('fullscreenModal'));
+    document.getElementById('closeSizetableBtn').onclick = () => closeModal(document.getElementById('sizetableModal'));
+    window.onclick = (e) => {
+        if(e.target === document.getElementById('productModal')) closeModal(document.getElementById('productModal'));
+        if(e.target === document.getElementById('sizetableModal')) closeModal(document.getElementById('sizetableModal'));
+        if(e.target === document.getElementById('checkoutModal')) closeModal(document.getElementById('checkoutModal'));
+        if(e.target === document.getElementById('cartModal')) closeModal(document.getElementById('cartModal'));
+        if(e.target === document.getElementById('favoritesModal')) closeModal(document.getElementById('favoritesModal'));
+        if(e.target === document.getElementById('salonModal')) closeModal(document.getElementById('salonModal'));
+        if(e.target === document.getElementById('fullscreenModal')) closeModal(document.getElementById('fullscreenModal'));
+    };
+
+    function getRecommendedProducts(currentId) {
+        let others = allProducts.filter(p => p.id !== currentId);
+        others.sort(() => 0.5 - Math.random());
+        return others.slice(0, 3);
+    }
+
+    function openProductModal(productId) {
+        const product = allProducts.find(p => p.id === productId);
+        if (!product) return;
+        const isFav = isFavorite(product.id);
+        const priceHtml = product.oldPrice ? `<span class="old-price">${product.oldPrice.toLocaleString('ru-RU')} ₽</span> <span class="new-price">${product.price.toLocaleString('ru-RU')} ₽</span>` : `<span class="normal-price">${product.price.toLocaleString('ru-RU')} ₽</span>`;
+        let sizeOptions = '<option value="" disabled selected>-- Выберите размер --</option>';
+        product.sizes.forEach(sz => { sizeOptions += `<option value="${sz}">${sz}</option>`; });
+        
+        const recs = getRecommendedProducts(product.id);
+        let recHtml = `<div class="recommend-section"><div class="recommend-title">✨ С этим товаром берут также ✨</div><div class="recommend-grid">`;
+        recs.forEach(r => {
+            recHtml += `<div class="recommend-item" data-id="${r.id}"><img class="recommend-img" src="${r.img}"><div class="recommend-info"><div class="recommend-name">${r.name}</div><div class="recommend-price">${r.price.toLocaleString('ru-RU')} ₽</div></div></div>`;
+        });
+        recHtml += `</div></div>`;
+
+        const rightContent = `
+            <h2>${product.name}</h2>
+            <div class="product-price">${priceHtml}</div>
+            <div class="product-description"><strong>Описание:</strong> ${product.description}</div>
+            <div class="care-block">
+                <h4><i class="fas fa-heartbeat"></i> Как ухаживать за бельём</h4>
+                <div class="care-icons-list">
+                    <div class="care-icon-item"><i class="fas fa-tshirt"></i><span>Деликатная стирка при 30°</span></div>
+                    <div class="care-icon-item"><i class="fas fa-ban"></i><i class="fas fa-tint"></i><span>Не отбеливать</span></div>
+                    <div class="care-icon-item"><i class="fas fa-iron"></i><span>Гладить при 110°</span></div>
+                    <div class="care-icon-item"><i class="fas fa-tint-slash"></i><span>Не сушить в машине</span></div>
+                </div>
+            </div>
+            <div class="delivery-info">
+                <h4><i class="fas fa-truck"></i> Доставка и оплата</h4>
+                <p><i class="fas fa-clock"></i> Срок доставки: 1–3 дня по Москве, 3–7 дней по России</p>
+                <p><i class="fas fa-ruble-sign"></i> Стоимость: 300 ₽ (бесплатно при заказе от 5000 ₽)</p>
+                <p><i class="fas fa-credit-card"></i> Оплата: картой онлайн, наличными курьеру, СБП</p>
+            </div>
+            <div class="size-selector">
+                <strong>Размер:</strong>
+                <select id="modalSizeSelect">${sizeOptions}</select>
+                <span class="size-link" id="showSizeTableLink">Таблица размеров</span>
+                <div id="modalSizeError" style="color:#e74c3c; font-size:12px; display:none;">Выберите размер</div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-cart" id="modalAddCartBtn"><i class="fas fa-shopping-basket"></i> В корзину</button>
+                <button class="modal-fav ${isFav ? 'active' : ''}" id="modalFavBtn"><i class="fas fa-heart"></i> ${isFav ? 'В избранном' : 'В избранное'}</button>
+            </div>
+            ${recHtml}
+        `;
+        document.getElementById('productModalRight').innerHTML = rightContent;
+        document.getElementById('modalProductImage').src = product.img;
+        document.getElementById('productModal').style.display = 'flex';
+        disableBodyScroll();
+        
+        document.getElementById('modalAddCartBtn').onclick = () => {
+            const size = document.getElementById('modalSizeSelect').value;
+            if (!size) { document.getElementById('modalSizeError').style.display = 'block'; return; }
+            document.getElementById('modalSizeError').style.display = 'none';
+            addToCartWithSize(product, size);
+        };
+        document.getElementById('modalFavBtn').onclick = () => {
+            toggleFavorite(product.id);
+            const btn = document.getElementById('modalFavBtn');
+            const newFav = isFavorite(product.id);
+            btn.classList.toggle('active', newFav);
+            btn.innerHTML = `<i class="fas fa-heart"></i> ${newFav ? 'В избранном' : 'В избранное'}`;
+            renderAll();
+        };
+        document.getElementById('showSizeTableLink').onclick = () => showSizeTable(product.isCorset);
+        
+        document.querySelectorAll('.recommend-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const id = parseInt(el.getAttribute('data-id'));
+                openProductModal(id);
+            });
+        });
+        document.getElementById('modalProductImage').onclick = () => openFullscreen(product.img);
+    }
+
+    function renderProductGrid(containerId, items, isSale = false) {
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        container.innerHTML = '';
+        items.forEach(item => {
+            const fav = isFavorite(item.id);
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `<div class="favorite-icon ${fav ? 'active' : ''}"><i class="fas fa-heart"></i></div><img class="product-img" src="${item.img}"><div class="product-content"><div class="product-title">${item.name}</div><div class="price-row">${isSale ? `<span class="old-price">${item.oldPrice.toLocaleString('ru-RU')} ₽</span><span class="new-price">${item.price.toLocaleString('ru-RU')} ₽</span>` : `<span class="normal-price">${item.price.toLocaleString('ru-RU')} ₽</span>`}</div><button class="btn-cart"><i class="fas fa-shopping-basket"></i> В корзину</button></div>`;
+            card.querySelector('.favorite-icon').onclick = (e) => { e.stopPropagation(); toggleFavorite(item.id); renderAll(); };
+            card.querySelector('.btn-cart').onclick = (e) => { e.stopPropagation(); openProductModal(item.id); };
+            card.onclick = (e) => { if(e.target === card || (!e.target.closest('.btn-cart') && !e.target.closest('.favorite-icon'))) openProductModal(item.id); };
+            container.appendChild(card);
+        });
+    }
+
+    function renderHits() {
+        const container = document.getElementById('hitsGrid');
+        if(!container) return;
+        container.innerHTML = '';
+        hits.forEach(h => {
+            const fav = isFavorite(h.id);
+            const card = document.createElement('div');
+            card.className = 'hit-card';
+            card.innerHTML = `
+                <div class="favorite-icon ${fav ? 'active' : ''}"><i class="fas fa-heart"></i></div>
+                <img class="hit-img" src="${h.img}">
+                <div class="hit-content">
+                    <div class="hit-title">${h.name}</div>
+                    <div class="hit-price">${h.price.toLocaleString('ru-RU')} ₽</div>
+                    <div class="hit-actions">
+                        <button class="hit-cart"><i class="fas fa-shopping-basket"></i> В корзину</button>
+                    </div>
+                </div>
+            `;
+            card.querySelector('.favorite-icon').onclick = (e) => { e.stopPropagation(); toggleFavorite(h.id); renderHits(); };
+            card.querySelector('.hit-cart').onclick = (e) => { e.stopPropagation(); openProductModal(h.id); };
+            card.onclick = (e) => { if(!e.target.closest('.hit-cart') && !e.target.closest('.favorite-icon')) openProductModal(h.id); };
+            container.appendChild(card);
+        });
+    }
+    
+    let corsetsSwiper = null;
+    function renderCorsetsSlider() {
+        const wrapper = document.getElementById('corsetsSwiperWrapper');
+        if(!wrapper) return;
+        wrapper.innerHTML = '';
+        corsets.forEach(c => {
+            const fav = isFavorite(c.id);
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.innerHTML = `<div class="corset-card"><div class="favorite-icon ${fav ? 'active' : ''}" style="position:absolute; top:12px; right:12px;"><i class="fas fa-heart"></i></div><img class="corset-img" src="${c.img}"><div class="corset-content"><div class="corset-title">${c.name}</div><div class="corset-price-row"><span class="corset-old-price">${c.oldPrice.toLocaleString('ru-RU')} ₽</span><span class="corset-new-price">${c.price.toLocaleString('ru-RU')} ₽</span></div><button class="btn-cart"><i class="fas fa-shopping-basket"></i> В корзину</button></div></div>`;
+            slide.querySelector('.favorite-icon').onclick = (e) => { e.stopPropagation(); toggleFavorite(c.id); renderCorsetsSlider(); };
+            slide.querySelector('.btn-cart').onclick = (e) => { e.stopPropagation(); openProductModal(c.id); };
+            slide.onclick = (e) => { if(!e.target.closest('.btn-cart') && !e.target.closest('.favorite-icon')) openProductModal(c.id); };
+            wrapper.appendChild(slide);
+        });
+        if(corsetsSwiper) corsetsSwiper.update();
+        else {
+            corsetsSwiper = new Swiper('.corsetsSwiper', { slidesPerView: 1, spaceBetween: 20, loop: true, pagination: { el: '.corsets-pagination', clickable: true }, navigation: { nextEl: '.corsets-next', prevEl: '.corsets-prev' }, breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }, autoplay: { delay: 4000, disableOnInteraction: false }, speed: 800 });
+        }
+    }
+    function renderAll() {
+        renderProductGrid('salesGrid', saleProducts, true);
+        renderProductGrid('bestsellersGrid', bestsellers, false);
+        renderHits();
+        renderCorsetsSlider();
+    }
+
+    function renderCartModal() {
+        const container = document.getElementById('cartItemsList');
+        if(!container) return;
+        if(cart.length===0) { container.innerHTML='<div style="text-align:center;">Корзина пуста</div>'; document.getElementById('cartTotal').innerText='0'; return; }
+        let html='', total=0;
+        cart.forEach(item=>{ total+=item.price*item.quantity; html+=`<div class="cart-item"><img class="cart-item-img" src="${item.img}"><div class="cart-item-details"><strong>${item.name}</strong><br>Размер: ${item.size}<br>${item.price.toLocaleString('ru-RU')} ₽ × ${item.quantity}</div><div class="cart-item-actions"><button onclick="changeQty(${item.id}, '${item.size}', -1)">-</button><span>${item.quantity}</span><button onclick="changeQty(${item.id}, '${item.size}', 1)">+</button><button onclick="removeCartItem(${item.id}, '${item.size}')"><i class="fas fa-times-circle"></i></button></div></div>`; });
+        container.innerHTML = html; document.getElementById('cartTotal').innerText = total.toLocaleString('ru-RU');
+    }
+    window.changeQty = (id, size, delta) => {
+        const idx = cart.findIndex(i => i.id === id && i.size === size);
+        if(idx !== -1) { cart[idx].quantity += delta; if(cart[idx].quantity <= 0) cart.splice(idx,1); saveCart(); renderCartModal(); updateCartUI(); }
+    };
+    window.removeCartItem = (id, size) => { cart = cart.filter(i => !(i.id === id && i.size === size)); saveCart(); };
+    function renderFavModal() {
+        const container = document.getElementById('favoritesItemsList');
+        const emptyMsg = document.getElementById('favoritesEmptyMsg');
+        const favItems = allProducts.filter(i => favorites.includes(i.id));
+        if(favItems.length===0) { container.innerHTML=''; emptyMsg.style.display='block'; return; }
+        emptyMsg.style.display='none';
+        let html='';
+        favItems.forEach(p=>{ html+=`<div class="cart-item" style="gap:16px;"><img class="cart-item-img" src="${p.img}" style="width:100px; height:100px;"><div style="flex:1;"><strong>${p.name}</strong><br>${p.price.toLocaleString('ru-RU')} ₽</div><div><button onclick="openProductModal(${p.id})" style="background:#2c1c14;color:white;border:none;padding:6px 12px;border-radius:40px;"><i class="fas fa-shopping-basket"></i> Купить</button><button onclick="removeFromFav(${p.id})" style="margin-left:8px; background:none; border:none; font-size:24px; color:#e74c3c; cursor:pointer;"><i class="fas fa-times-circle"></i></button></div></div>`; });
+        container.innerHTML=html;
+    }
+    window.removeFromFav = (id) => { favorites = favorites.filter(f=>f!==id); saveFav(); };
+    window.openProductModal = openProductModal;
+
+    function showCheckoutForm() {
+        const modalContent = document.getElementById('checkoutModalContent');
+        modalContent.innerHTML = `
+            <span id="closeCheckoutBtn" style="float:right; font-size:28px; cursor:pointer;">&times;</span>
+            <h3>Оформление заказа</h3>
+            <form id="orderForm">
+                <div class="checkout-form-group"><label>ФИО *</label><input type="text" id="fullName" required></div>
+                <div class="checkout-form-group"><label>Телефон *</label><input type="tel" id="phone" required></div>
+                <div class="checkout-form-group"><label>Email *</label><input type="email" id="email" required></div>
+                <div class="checkout-form-group"><label>Адрес доставки *</label><textarea id="address" rows="2" required></textarea></div>
+                <div class="checkout-form-group"><label>Способ доставки</label><select id="deliveryMethod"><option>Курьером</option><option>Почта России</option><option>СДЭК</option></select></div>
+                <div class="checkout-form-group"><label>Способ оплаты</label><select id="paymentMethod"><option>Картой онлайн</option><option>Наличными курьеру</option><option>СБП</option></select></div>
+                <button type="submit" class="checkout-submit">Отправить заказ</button>
+            </form>
+        `;
+        document.getElementById('checkoutModal').style.display = 'flex';
+        disableBodyScroll();
+        document.getElementById('closeCheckoutBtn').onclick = () => closeModal(document.getElementById('checkoutModal'));
+        document.getElementById('orderForm').onsubmit = (e) => {
+            e.preventDefault();
+            if(!document.getElementById('fullName').value || !document.getElementById('phone').value || !document.getElementById('email').value || !document.getElementById('address').value) {
+                showToast("Заполните все поля");
+                return;
+            }
+            modalContent.innerHTML = `
+                <div class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Спасибо за заказ!</h3>
+                    <p>С вами свяжутся для подтверждения в ближайшее время.</p>
+                    <button class="back-to-shop" id="backToShopBtn"> Вернуться к покупкам</button>
+                </div>
+            `;
+            document.getElementById('backToShopBtn').onclick = () => {
+                closeModal(document.getElementById('checkoutModal'));
+                cart = [];
+                saveCart();
+                showToast("Корзина очищена. Спасибо!");
+            };
+        };
+    }
+
+    // Закрытие модалок
+    const salonModal = document.getElementById('salonModal');
+    document.getElementById('salonBtn').onclick = () => { salonModal.style.display='flex'; disableBodyScroll(); };
+    document.getElementById('closeSalonBtn').onclick = () => closeModal(salonModal);
+    const cartModalEl = document.getElementById('cartModal'), cartBtn = document.getElementById('cartButton'), closeCart = document.getElementById('closeCartBtn');
+    cartBtn.onclick = () => { renderCartModal(); cartModalEl.style.display='flex'; disableBodyScroll(); };
+    closeCart.onclick = () => closeModal(cartModalEl);
+    const favModalEl = document.getElementById('favoritesModal'), favBtn = document.getElementById('favoritesButton'), closeFav = document.getElementById('closeFavoritesBtn');
+    favBtn.onclick = () => { renderFavModal(); favModalEl.style.display='flex'; disableBodyScroll(); };
+    closeFav.onclick = () => closeModal(favModalEl);
+    document.getElementById('checkoutBtn').onclick = () => {
+        closeModal(cartModalEl);
+        showCheckoutForm();
+    };
+    document.getElementById('closeProductBtn').onclick = () => closeModal(document.getElementById('productModal'));
+
+    new Swiper('.novelties-swiper', { 
+        loop: true, 
+        autoplay: { delay: 4000 }, 
+        pagination: { el: '.novelties-pagination', clickable: true }, 
+        navigation: { nextEl: '.novelties-next', prevEl: '.novelties-prev' }, 
+        slidesPerView: 1, 
+        spaceBetween: 0, 
+        speed: 800 
+    });
+    renderAll(); updateCartUI(); updateFavUI();
+    const observer = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold:0.2 });
+    document.querySelectorAll('.animate-on-scroll').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
